@@ -4,8 +4,8 @@ from app.routers import auth_router, users_router
 
 app = FastAPI(
     title="IAM REST API",
-    description="A secure REST API demonstrating JWT authentication and "
-    "role-based access control (RBAC).",
+    description="Et sikkert REST API som viser JWT-autentisering og "
+    "rollebasert tilgangskontroll (RBAC).",
     version="1.0.0",
 )
 

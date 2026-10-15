@@ -1,94 +1,94 @@
 # IAM REST API
 
-A secure REST API built with FastAPI, demonstrating the two halves of identity and access management: **authentication** (proving who you are with JWT) and **authorization** (controlling what you can do with role-based access control).
+Et sikkert REST API bygget med FastAPI, som viser de to delene av identitets- og tilgangsstyring: **autentisering** (å bevise hvem du er med JWT) og **autorisasjon** (å styre hva du har lov til med rollebasert tilgangskontroll).
 
-## What it does
+## Hva det gjør
 
-- Users log in with a username and password and receive a signed **JWT access token**
-- Passwords are never stored in plaintext, they are hashed with **bcrypt**
-- Every protected endpoint requires a valid, unexpired token
-- Endpoints enforce **least privilege** through roles: a normal `user` cannot reach `admin`-only routes
-- Tokens are time-limited and signature-verified, so a tampered or expired token is rejected
+- Brukere logger inn med brukernavn og passord og får et signert **JWT-tilgangstoken**
+- Passord lagres aldri i klartekst, de hashes med **bcrypt**
+- Alle beskyttede endepunkter krever et gyldig token som ikke har utløpt
+- Endepunktene håndhever **minste privilegium** gjennom roller: en vanlig `user` slipper ikke inn på ruter som bare er for `admin`
+- Tokenene er tidsbegrenset og signaturen verifiseres, så et token som er tuklet med eller har utløpt, blir avvist
 
-## Endpoints
+## Endepunkter
 
-| Method | Path | Access | Description |
+| Metode | Sti | Tilgang | Beskrivelse |
 |--------|------|--------|-------------|
-| `POST` | `/auth/register` | Public | Create a new account |
-| `POST` | `/auth/login` | Public | Exchange credentials for a JWT |
-| `GET`  | `/users/me` | Any logged-in user | Read your own profile |
-| `GET`  | `/users` | Admin only | List all accounts |
-| `DELETE` | `/users/{username}` | Admin only | Delete an account (not your own) |
-| `GET`  | `/` | Public | Health check |
+| `POST` | `/auth/register` | Åpen | Opprett en ny konto |
+| `POST` | `/auth/login` | Åpen | Bytt brukernavn og passord mot et JWT |
+| `GET`  | `/users/me` | Alle innloggede brukere | Les din egen profil |
+| `GET`  | `/users` | Bare admin | List opp alle kontoer |
+| `DELETE` | `/users/{username}` | Bare admin | Slett en konto (ikke din egen) |
+| `GET`  | `/` | Åpen | Helsesjekk |
 
-## How access control works
+## Slik fungerer tilgangskontrollen
 
-Two FastAPI dependencies do the work:
+To FastAPI-avhengigheter gjør jobben:
 
-- **`get_current_user`** decodes the bearer token, verifies its signature and expiry, and loads the matching user. This is the *authentication* gate, no valid token, no entry.
-- **`require_role(Role.admin)`** builds on that and checks the role claim inside the token. This is the *authorization* gate, it returns **403 Forbidden** when an authenticated user lacks the required role.
+- **`get_current_user`** dekoder bearer-tokenet, verifiserer signatur og utløpstid, og henter brukeren det gjelder. Dette er *autentiserings*porten: uten gyldig token, ingen adgang.
+- **`require_role(Role.admin)`** bygger videre på dette og sjekker rollen som ligger i tokenet. Dette er *autorisasjons*porten: den returnerer **403 Forbidden** når en innlogget bruker mangler riktig rolle.
 
-The role lives inside the signed token, so it cannot be changed by the client without breaking the signature.
+Rollen ligger inne i det signerte tokenet, så klienten kan ikke endre den uten å ødelegge signaturen.
 
-## Project structure
+## Prosjektstruktur
 
 ```
 app/
-  config.py          # settings (secret key, token expiry)
-  models.py          # Pydantic schemas and the Role enum
-  auth.py            # password hashing + JWT create/decode
-  database.py        # in-memory user store (swap for a real DB)
-  security.py        # get_current_user + require_role dependencies
+  config.py          # innstillinger (hemmelig nøkkel, levetid for token)
+  models.py          # Pydantic-skjemaer og Role-enumen
+  auth.py            # hashing av passord + opprett/dekod JWT
+  database.py        # brukerlager i minnet (kan byttes ut med en ekte database)
+  security.py        # avhengighetene get_current_user + require_role
   routers/
     auth_router.py   # /auth/register, /auth/login
     users_router.py  # /users/me, /users, /users/{username}
-  main.py            # app entry point
+  main.py            # startpunkt for appen
 tests/
-  test_api.py        # 10 tests covering auth + RBAC
+  test_api.py        # 10 tester som dekker autentisering + RBAC
 ```
 
-## Running it
+## Kjøre det
 
 ```bash
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Then open `http://127.0.0.1:8000/docs` for the interactive Swagger UI.
+Åpne deretter `http://127.0.0.1:8000/docs` for det interaktive Swagger-grensesnittet.
 
-### Seeded accounts
+### Ferdige kontoer
 
-| Username | Password | Role |
+| Brukernavn | Passord | Rolle |
 |----------|----------|------|
 | `admin` | `admin12345` | admin |
 | `alice` | `alice12345` | user |
 
-### Quick try
+### Prøv raskt
 
 ```bash
-# Log in and grab a token
+# Logg inn og hent et token
 curl -X POST http://127.0.0.1:8000/auth/login \
   -d "username=admin&password=admin12345"
 
-# Use the token on an admin-only endpoint
+# Bruk tokenet på et endepunkt som bare er for admin
 curl http://127.0.0.1:8000/users \
-  -H "Authorization: Bearer <paste-token-here>"
+  -H "Authorization: Bearer <lim-inn-token-her>"
 ```
 
-## Tests
+## Tester
 
 ```bash
 pytest -q
 ```
 
-Covers successful login, wrong password, missing token, tampered token, a normal user being blocked from admin routes (403), admin access, registration, duplicate usernames, and deletion rules.
+Dekker vellykket innlogging, feil passord, manglende token, token som er tuklet med, at en vanlig bruker blir stoppet fra admin-ruter (403), admin-tilgang, registrering, dupliserte brukernavn og regler for sletting.
 
-## Security notes
+## Sikkerhetsmerknader
 
-- `SECRET_KEY` defaults to a placeholder for local use. In production it must come from an environment variable or a secrets manager (for example Azure Key Vault), never committed to source control.
-- The in-memory store and seeded accounts are for demonstration. A real deployment would use a database and would not ship with default credentials.
-- Login returns the same generic error for a wrong username or a wrong password, which avoids leaking whether an account exists (user enumeration).
+- `SECRET_KEY` har en plassholderverdi for lokal bruk. I produksjon må den komme fra en miljøvariabel eller et hemmelighetshvelv (for eksempel Azure Key Vault), og aldri sjekkes inn i kildekoden.
+- Brukerlageret i minnet og de ferdige kontoene er for demonstrasjon. En ekte løsning ville brukt en database og ikke hatt standardpassord.
+- Innloggingen gir samme generelle feilmelding for feil brukernavn og feil passord, slik at den ikke avslører om en konto finnes (brukeropptelling).
 
-## Tech
+## Teknologi
 
 Python · FastAPI · PyJWT · passlib/bcrypt · pytest

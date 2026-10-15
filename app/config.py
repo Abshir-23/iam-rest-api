@@ -2,10 +2,10 @@ import os
 
 
 class Settings:
-    """Application configuration.
+    """Konfigurasjon for applikasjonen.
 
-    In production, SECRET_KEY must come from the environment (or a secrets
-    manager / Azure Key Vault) and never be committed to source control.
+    I produksjon må SECRET_KEY komme fra miljøet (eller et hemmelighetshvelv
+    som Azure Key Vault) og aldri sjekkes inn i kildekoden.
     """
 
     SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-change-me-in-production")

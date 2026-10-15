@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class Role(str, Enum):
-    """The two access levels in this API."""
+    """De to tilgangsnivåene i dette API-et."""
     admin = "admin"
     user = "user"
 
@@ -15,13 +15,13 @@ class UserCreate(BaseModel):
 
 
 class UserPublic(BaseModel):
-    """What we return to clients - never includes the password hash."""
+    """Det vi returnerer til klienter, inneholder aldri passordhashen."""
     username: str
     role: Role
 
 
 class UserInDB(UserPublic):
-    """Internal representation, stored server-side only."""
+    """Intern representasjon, lagres bare på serveren."""
     hashed_password: str
 
 

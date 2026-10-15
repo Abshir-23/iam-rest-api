@@ -1,14 +1,15 @@
-"""A tiny in-memory user store.
+"""Et lite brukerlager i minnet.
 
-Kept deliberately simple so the focus stays on the identity and access-control
-logic. In a real system this would be a database (and the seed users would not
-exist). Swapping this module for a real DB layer would not change the API.
+Holdt bevisst enkelt slik at fokuset blir på logikken for identitet og
+tilgangskontroll. I et ekte system ville dette vært en database (og
+startbrukerne ville ikke funnes). Å bytte ut denne modulen med et ekte
+databaselag ville ikke endret API-et.
 """
 from app.auth import hash_password
 from app.models import Role, UserInDB
 
-# Seeded accounts so the API is usable immediately. Passwords are hashed at
-# startup - the plaintext only lives here for demo convenience.
+# Ferdige kontoer slik at API-et kan brukes med en gang. Passordene hashes
+# ved oppstart, klarteksten finnes bare her for å gjøre demoen enkel.
 _users: dict[str, UserInDB] = {}
 
 

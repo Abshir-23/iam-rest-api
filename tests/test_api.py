@@ -1,4 +1,4 @@
-"""End-to-end tests covering authentication and RBAC enforcement."""
+"""Ende-til-ende-tester som dekker autentisering og håndheving av RBAC."""
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -50,7 +50,7 @@ def test_tampered_token_rejected():
 def test_user_cannot_access_admin_endpoint():
     token = login("alice", "alice12345")
     resp = client.get("/users", headers=auth_header(token))
-    assert resp.status_code == 403  # authenticated but not authorized
+    assert resp.status_code == 403  # autentisert, men ikke autorisert
 
 
 def test_admin_can_list_users():
